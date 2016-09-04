@@ -1,7 +1,6 @@
-const {dialog}  = require('electron');
 const ipc       = require('electron').ipcRenderer;
 const fs        = require('fs');
-const Papa      = require('papaparse');
+const Baby      = require('babyparse');
 
 class TableRow extends React.Component {
     constructor(props) {
@@ -61,8 +60,9 @@ class ExploreCSV extends React.Component {
         this.state = {
             file: null
         };
-        //this.openFile     = this.openFolder.bind(this);
-        //this.selectFolder   = this.selectFolder.bind(this);
+
+        this.openFile       = this.openFile.bind(this);
+        this.fileSelected   = this.fileSelected.bind(this);
     }
 /*    viewFolder() {
         var _self = this;
@@ -78,21 +78,19 @@ class ExploreCSV extends React.Component {
         this.viewFolder();
     }
     selectFolder() {
-        ipc.send('open-file-dialog');
+        
     }*/
-    openFile(file) {
+    openFile() {
+        ipc.send('open-file-dialog');
+    }
+    fileSelected(event, path) {
         this.setState({
-            file: Papa.parse(file, { delimiter: ",", newline: "\n",header: true })
+            file: Baby.parseFiles(path[0], { delimiter: ",", newline: "\n", header: true })
         });
+
     }
     componentDidMount() {
-        var csv = `date,v1,v2
-2011-06-05,1209,0
-2011-07-03,384,1182`;
-
-        this.openFile(csv);
-        //ipc.on('selected-directory', this.openFolder);
-        //dialog.showOpenDialog({properties: ['openFile']});
+        ipc.on('selected-file', this.fileSelected);
     }
     render() {
 
@@ -110,7 +108,7 @@ class ExploreCSV extends React.Component {
 
                     <div className="toolbar-actions">
                         <div className="btn-group">
-                            <button className="btn btn-default">
+                            <button className="btn btn-default" onClick={this.openFile}>
                                 <span className="icon icon-folder" />
                             </button>
                         </div>
